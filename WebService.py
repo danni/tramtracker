@@ -1,5 +1,6 @@
 from Queue import Queue
 from threading import Thread
+from datetime import datetime
 
 import gobject
 
@@ -71,7 +72,7 @@ def async_method(func):
 parseString = lambda s: s[0]
 parseFloat = lambda f: float(f[0])
 parseBool = lambda b: bool(b[0])
-parseDateTime = parseString # FIXME
+parseDateTime = lambda d: datetime.strptime(d[0].split('.', 1)[0].split('+', 1)[0], '%Y-%m-%dT%H:%M:%S')
 
 def load_request(data, props):
     d = {}
