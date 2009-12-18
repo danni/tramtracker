@@ -62,6 +62,20 @@ class WebService(ThreadQueue):
         return self.guid
 
     @async_method
+    def GetStopsAndRoutesUpdatesSince(self, dateSince=datetime(year=2009, month=7, day=8)):
+        reply = self.client.service.GetStopsAndRoutesUpdatesSince(dateSince)
+        try:
+            stops = reply.GetStopsAndRoutesUpdatesSinceResult.diffgram.dsCoreDataChanges.dtStopsChanges
+            return map(lambda stop: (stop.StopNo, stop.Action), stops)
+
+        except AttributeError, e:
+            if reply.validationResult != "":
+                print reply.validationResult
+                return []
+            else:
+                raise e
+
+    @async_method
     def GetStopInformation(self, stopNo):
         print "Requesting information for stop", stopNo
         reply = self.client.service.GetStopInformation(stopNo)
