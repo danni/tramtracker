@@ -98,6 +98,7 @@ class WebService(ThreadQueue):
                     'Zones',
                 ])
             d['StopNo'] = stopNo
+            d['CrossRoad'], d['TravelRoad'] = d['StopName'].split(' & ', 2)
             return d
 
         except AttributeError, e:
@@ -137,3 +138,27 @@ class WebService(ThreadQueue):
                 return {}
             else:
                 raise e
+
+    @async_method
+    def GetDestinationsForRoute(self, routeNo):
+        reply = self.client.service.GetDestinationsForRoute(routeNo)
+        try:
+            info = reply.GetDestinationsForRouteResult.diffgram[0].DocumentElement[0].RouteDestinations[0]
+            return load_request(info, [
+                    'UpDestination',
+                    'DownDestination',
+                ])
+
+        except AttributeError, e:
+            if reply.validationResult != "":
+                print reply.validationResult
+                return {}
+            else:
+                raise e
+
+    @async_method
+    def GetListOfStopsByRouteNoAndDirection(self, routeNo, isUpDirection):
+        reply = self.client.service.GetListOfStopsByRouteNoAndDirection(routeNo,
+            isUpDirection)
+
+        print reply
