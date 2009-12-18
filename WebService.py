@@ -128,16 +128,23 @@ class WebService(ThreadQueue):
         try:
             stopinfo = reply.GetStopInformationResult.diffgram[0].DocumentElement[0].StopInformation[0]
 
-            return {
-                'StopNo': stopNo,
-                'FlagStopNo': stopinfo.FlagStopNo[0],
-                'StopName': stopinfo.StopName[0],
-                'CityDirection': stopinfo.CityDirection[0],
-                'Latitude': float(stopinfo.Latitude[0]),
-                'Longitude': float(stopinfo.Longitude[0]),
-                'SuburbName': stopinfo.SuburbName[0],
-                # FIXME: rest of dict
-            }
+            d = load_request(stopinfo, [
+                    'FlagStopNo',
+                    'StopName',
+                    'CityDirection',
+                   ('Latitude', parseFloat),
+                   ('Longitude', parseFloat),
+                    'SuburbName',
+                   ('IsCityStop', parseBool),
+                   ('HasConnectingBuses', parseBool),
+                   ('HasConnectingTrains', parseBool),
+                   ('HasConnectingTrams', parseBool),
+                    'StopLength',
+                   ('IsPlatformStop', parseBool),
+                    'Zones',
+                ])
+            d['StopNo'] = stopNo
+            return d
 
         except AttributeError, e:
             if reply.validationResult != "":
