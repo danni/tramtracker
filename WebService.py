@@ -27,8 +27,6 @@ class ThreadQueue(object):
             self.q.task_done()
 
     def do_request(self, (func, args, kwargs)):
-        # print "Handling request: %s" % str(func)
-
         if 'callback' in kwargs:
             callback = kwargs['callback']
             del kwargs['callback']
@@ -44,10 +42,8 @@ class ThreadQueue(object):
         try:
             r = func(*args, **kwargs)
             if not isinstance(r, tuple): r = (r,)
-            # print "Request done"
             if callback: self.do_callback(callback, *r)
         except Exception, e:
-            # print "Request failed"
             if error: self.do_callback(error, e)
             else: print "Unhandled error:", e
 
@@ -56,7 +52,6 @@ class ThreadQueue(object):
             callback(*args)
             return False
 
-        # print "Scheduling callback %s" % (callback)
         gobject.idle_add(_callback, callback, args)
 
 def async_method(func):
