@@ -26,7 +26,7 @@ class ThreadQueue(object):
             self.q.task_done()
 
     def do_request(self, (func, args, kwargs)):
-        print "Handling request: %s" % str(func)
+        # print "Handling request: %s" % str(func)
 
         if 'callback' in kwargs:
             callback = kwargs['callback']
@@ -43,34 +43,52 @@ class ThreadQueue(object):
         try:
             r = func(*args, **kwargs)
             if not isinstance(r, tuple): r = (r,)
-            print "Request done"
+            # print "Request done"
             if callback: self.do_callback(callback, *r)
         except Exception, e:
-            print "Request failed"
-            print e
+            # print "Request failed"
             if error: self.do_callback(error, e)
+            else: print "Unhandled error:", e
 
     def do_callback(self, callback, *args):
         def _callback(callback, args):
             callback(*args)
             return False
 
-        print "Scheduling callback %s" % (callback)
+        # print "Scheduling callback %s" % (callback)
         gobject.idle_add(_callback, callback, args)
 
-class async_method(object):
-    """Annotate this method as an async method that simply adds a request
-       calling the named handler
+def async_method(func):
+    """Makes the given method asynchronous, meaning when it is called it
+       will be queued with add_request.
     """
 
-    def __init__(self, handler):
-        self._handler = handler
+    def bound_func(obj, *args, **kwargs):
+        obj.add_request(func, obj, *args, **kwargs)
 
-    def __call__(self, func):
-        def wrapped_func(obj, *args, **kwargs):
-            obj.add_request(getattr(obj, self._handler), *args, **kwargs)
+    return bound_func
 
-        return wrapped_func
+parseString = lambda s: s[0]
+parseFloat = lambda f: float(f[0])
+parseBool = lambda b: bool(b[0])
+parseDateTime = parseString # FIXME
+
+def load_request(data, props):
+    d = {}
+
+    for prop in props:
+        if isinstance(prop, tuple):
+            prop, transform = prop
+        else:
+            transform = lambda a: a[0]
+
+        try:
+            d[prop] = transform(getattr(data, prop))
+        except Exception, e:
+            print "ERROR (prop = %s): %s" % (prop, e)
+            continue
+
+    return d
 
 class WebService(ThreadQueue):
     def __init__(self, guid = None, **kwargs):
@@ -102,10 +120,8 @@ class WebService(ThreadQueue):
 
         return self.guid
 
-    @async_method('_get_stop_information')
-    def GetStopInformation(self, stopNo): pass
-
-    def _get_stop_information(self, stopNo):
+    @async_method
+    def GetStopInformation(self, stopNo):
         print "Requesting information for stop", stopNo
         reply = self.client.service.GetStopInformation(stopNo)
         try:
@@ -129,4 +145,33 @@ class WebService(ThreadQueue):
             else:
                 raise e
 
-    def GetNextPredictedRoutesCollection(self, stopNo, routeNo, lowFloor): pass
+    @async_method
+    def GetNextPredictedRoutesCollection(self, stopNo, routeNo=0, lowFloor=False):
+        print "Requesting routes for stop", stopNo
+        reply = self.client.service.GetNextPredictedRoutesCollection(stopNo, \
+            routeNo, lowFloor)
+        try:
+            info = reply.GetNextPredictedRoutesCollectionResult.diffgram[0].DocumentElement[0].ToReturn
+            return map(lambda tram: load_request(tram, [
+                    'InternalRouteNo',
+                    'RouteNo',
+                    'HeadboardRouteNo',
+                    'VehicleNo',
+                    'Destination',
+                   ('HasDisruption', parseBool),
+                   ('IsTTAvailable', parseBool),
+                   ('IsLowFloorTram', parseBool),
+                   ('AirConditioned', parseBool),
+                   ('DisplayAC', parseBool),
+                   ('HasSpecialEvent', parseBool),
+                    'SpecialEventMessage',
+                   ('PredictedArrivalDateTime', parseDateTime),
+                   ('RequestDateTime', parseDateTime),
+                ]), info)
+
+        except AttributeError, e:
+            if reply.validationResult != "":
+                print reply.validationResult
+                return {}
+            else:
+                raise e
