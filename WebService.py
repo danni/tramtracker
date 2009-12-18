@@ -16,20 +16,39 @@ class ThreadQueue(object):
         t.setDaemon(True)
         t.start()
 
-    def add_request(self, *request):
-        self.q.put(request)
+    def add_request(self, func, *args, **kwargs):
+        self.q.put((func, args, kwargs))
 
     def _thread_worker(self):
         while True:
             request = self.q.get()
-            self.do_request(list(request))
+            self.do_request(request)
             self.q.task_done()
 
-    def do_request(self, request):
-        print "Handling request: %s" % str(request)
-        call = request.pop(0)
-        call(*request)
-        print "Request done"
+    def do_request(self, (func, args, kwargs)):
+        print "Handling request: %s" % str(func)
+
+        if 'callback' in kwargs:
+            callback = kwargs['callback']
+            del kwargs['callback']
+        else:
+            callback = None
+
+        if 'error' in kwargs:
+            error = kwargs['error']
+            del kwargs['error']
+        else:
+            error = None
+
+        try:
+            r = func(*args, **kwargs)
+            if not isinstance(r, tuple): r = (r,)
+            print "Request done"
+            if callback: self.do_callback(callback, *r)
+        except Exception, e:
+            print "Request failed"
+            print e
+            if error: self.do_callback(error, e)
 
     def do_callback(self, callback, *args):
         def _callback(callback, args):
@@ -40,13 +59,13 @@ class ThreadQueue(object):
         gobject.idle_add(_callback, callback, args)
 
 class WebService(ThreadQueue):
-    def __init__(self, callback, guid = None):
+    def __init__(self, guid = None, **kwargs):
         ThreadQueue.__init__(self)
 
         self.guid = guid
-        self.add_request(self._setup_client, callback)
+        self.add_request(self._setup_client, **kwargs)
 
-    def _setup_client(self, callback):
+    def _setup_client(self):
         print "Setting up client"
 
         imp = Import('http://www.w3.org/2001/XMLSchema')
@@ -67,4 +86,31 @@ class WebService(ThreadQueue):
         headers.ClientWebServiceVersion = '6.4.0.0'
         self.client.set_options(soapheaders=headers)
 
-        self.do_callback(callback, self.guid)
+        return self.guid
+
+    def GetStopInformation(self, stopNo, **kwargs):
+        self.add_request(self._get_stop_information, stopNo, **kwargs)
+
+    def _get_stop_information(self, stopNo):
+        print "Requesting information for stop", stopNo
+        reply = self.client.service.GetStopInformation(stopNo)
+        try:
+            stopinfo = reply.GetStopInformationResult.diffgram[0].DocumentElement[0].StopInformation[0]
+
+            return {
+                'StopNo': stopNo,
+                'FlagStopNo': stopinfo.FlagStopNo[0],
+                'StopName': stopinfo.StopName[0],
+                'CityDirection': stopinfo.CityDirection[0],
+                'Latitude': float(stopinfo.Latitude[0]),
+                'Longitude': float(stopinfo.Longitude[0]),
+                'SuburbName': stopinfo.SuburbName[0],
+                # FIXME: rest of dict
+            }
+
+        except AttributeError, e:
+            if reply.validationResult != "":
+                print reply.validationResult
+                return {}
+            else:
+                raise e
