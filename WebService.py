@@ -18,6 +18,10 @@ class ThreadQueue(object):
         t.start()
 
     def add_request(self, func, *args, **kwargs):
+        """Add a request to the queue. Pass callback= and/or error= as
+           keyword arguments to receive return from functions or exceptions.
+        """
+
         self.q.put((func, args, kwargs))
 
     def _thread_worker(self):
@@ -87,7 +91,10 @@ def load_request(data, props):
     return d
 
 class WebService(ThreadQueue):
-    def __init__(self, guid = None, **kwargs):
+    def __init__(self, guid=None, **kwargs):
+        """Initialise the service. If guid is not provided, one will be
+           requested (returned in the callback). Pass callback= or error=
+           to receive notification of readiness."""
         ThreadQueue.__init__(self)
 
         self.guid = guid
