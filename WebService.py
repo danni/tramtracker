@@ -55,8 +55,22 @@ class ThreadQueue(object):
             callback(*args)
             return False
 
-        print "Scheduling callback %s: %s" % (callback, args)
+        print "Scheduling callback %s" % (callback)
         gobject.idle_add(_callback, callback, args)
+
+class async_method(object):
+    """Annotate this method as an async method that simply adds a request
+       calling the named handler
+    """
+
+    def __init__(self, handler):
+        self._handler = handler
+
+    def __call__(self, func):
+        def wrapped_func(obj, *args, **kwargs):
+            obj.add_request(getattr(obj, self._handler), *args, **kwargs)
+
+        return wrapped_func
 
 class WebService(ThreadQueue):
     def __init__(self, guid = None, **kwargs):
@@ -88,8 +102,8 @@ class WebService(ThreadQueue):
 
         return self.guid
 
-    def GetStopInformation(self, stopNo, **kwargs):
-        self.add_request(self._get_stop_information, stopNo, **kwargs)
+    @async_method('_get_stop_information')
+    def GetStopInformation(self, stopNo): pass
 
     def _get_stop_information(self, stopNo):
         print "Requesting information for stop", stopNo
@@ -114,3 +128,5 @@ class WebService(ThreadQueue):
                 return {}
             else:
                 raise e
+
+    def GetNextPredictedRoutesCollection(self, stopNo, routeNo, lowFloor): pass
