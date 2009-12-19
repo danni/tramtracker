@@ -8,7 +8,7 @@ url = 'http://ws.tramtracker.com.au/pidsservice/pids.asmx?wsdl'
 
 parseString = lambda s: s[0]
 parseFloat = lambda f: float(f[0])
-parseBool = lambda b: bool(b[0])
+parseBool = lambda b: b[0] == 'true'
 parseDateTime = lambda d: datetime.strptime(d[0].split('.', 1)[0].split('+', 1)[0], '%Y-%m-%dT%H:%M:%S')
 
 def load_request(data, props):
@@ -98,7 +98,10 @@ class WebService(ThreadQueue):
                     'Zones',
                 ])
             d['StopNo'] = stopNo
-            d['CrossRoad'], d['TravelRoad'] = d['StopName'].split(' & ', 2)
+            try:
+                d['CrossRoad'], d['TravelRoad'] = d['StopName'].split(' & ', 2)
+            except ValueError:
+                pass
             return d
 
         except AttributeError, e:
