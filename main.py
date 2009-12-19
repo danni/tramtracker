@@ -1,14 +1,20 @@
 import gtk
 import gobject
+import gconf
 
 from WebService import WebService
 from ui.StopEntryDialog import StopEntryDialog
 from ui.StopDisplayDialog import StopDisplayDialog
 
-guid = 'eee3b53d-b555-4211-ac5e-2af76af8bac0'
+GCONF_DIR = '/apps/tramtracker/'
+GUID_KEY = GCONF_DIR + 'guid'
 
 class Client(object):
     def __init__(self):
+        self.gconf = gconf.client_get_default()
+
+        guid = self.gconf.get_string(GUID_KEY)
+
         self.w = WebService(guid=guid, callback=self.client_ready)
 
         self.dialog = StopEntryDialog()
@@ -18,6 +24,7 @@ class Client(object):
 
     def client_ready(self, guid):
         print "client ready:", guid
+        self.gconf.set_string(GUID_KEY, guid)
 
     def retrieve_stop_info(self, dialog, stopNo):
         dialog = StopDisplayDialog()
