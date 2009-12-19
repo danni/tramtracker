@@ -2,9 +2,10 @@ import gtk
 import gobject
 import gconf
 
-from datetime import datetime
+from datetime import datetime, date
 
 from WebService import WebService
+from Database import Database
 from ui.StopEntryDialog import StopEntryDialog
 from ui.StopDisplayDialog import StopDisplayDialog
 from ui.UpdateClientDialog import UpdateClientDialog
@@ -16,6 +17,7 @@ LAST_UPDATED = GCONF_DIR + 'last_updated'
 class Client(object):
     def __init__(self):
         self.gconf = gconf.client_get_default()
+        self.database = Database()
 
         guid = self.gconf.get_string(GUID_KEY)
 
@@ -26,7 +28,7 @@ class Client(object):
         self.dialog.connect('stop-entered', self.retrieve_stop_info)
         self.dialog.connect('destroy', lambda *args: gtk.main_quit())
 
-        self.update_database()
+        # self.update_database()
 
     def client_ready(self, guid):
         print "client ready:", guid
@@ -46,13 +48,13 @@ class Client(object):
 
         def _got_stop(stopinfo):
             dialog.set_stop_info(stopinfo)
+            self.database.storeStop(stopinfo)
 
         def _got_trams(trams):
             # print trams
             dialog.set_progress_indicator(False)
             dialog.set_tram_info(trams)
 
-        # FIXME: get this from database
         self.w.GetStopInformation(stopNo,
             callback=_got_stop)
 
@@ -64,7 +66,10 @@ class Client(object):
     def update_database(self):
         dateSince = self.gconf.get_string(LAST_UPDATED)
         if dateSince: dateSince = datetime.strptime(dateSince, '%Y-%m-%d')
-        dialog = UpdateClientDialog(self.w, dateSince, parent=self.dialog)
+        if dateSince.date() == date.today(): return
+
+        dialog = UpdateClientDialog(self.w, self.database, dateSince,
+                    parent=self.dialog)
 
 gobject.threads_init()
 gtk.set_application_name("Tram Tracker")

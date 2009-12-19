@@ -4,9 +4,10 @@ import hildon
 
 class UpdateClientDialog(gtk.Dialog):
 
-    def __init__(self, w, dateSince, parent=None):
+    def __init__(self, w, database, dateSince, parent=None):
         gtk.Dialog.__init__(self, title='Update Stops Database', parent=parent)
         self.w = w
+        self.database = database
         self._continue_download = True
 
         hbox = gtk.HBox(spacing = 3)
@@ -52,7 +53,6 @@ class UpdateClientDialog(gtk.Dialog):
         yes_button.connect('clicked', _update_callback)
 
     def do_response(self, response_id):
-        print "response"
         self._continue_download = False
 
     def get_next_stop(self):
@@ -64,7 +64,7 @@ class UpdateClientDialog(gtk.Dialog):
             return
 
         if action == 'DELETE':
-            pass # DELETE RECORD
+            self.database.deleteStop(stopNo)
         elif action == 'UPDATE':
             self.w.GetStopInformation(stopNo, callback=self.got_info)
 
@@ -74,7 +74,7 @@ class UpdateClientDialog(gtk.Dialog):
         self.label.set_label("Requesting updated stops... %i%%" % percent)
         self.progressbar.set_fraction(percent / 100.)
 
-        print stopinfo
+        self.database.storeStop(stopinfo)
         self.get_next_stop()
 
     def set_progress_indicator(self, state):
