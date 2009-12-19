@@ -9,6 +9,8 @@ from Database import Database
 from ui.StopEntryDialog import StopEntryDialog
 from ui.StopDisplayDialog import StopDisplayDialog
 from ui.UpdateClientDialog import UpdateClientDialog
+from ui.FindByNameDialog import FindByNameDialog
+from ui.ListStopsDialog import ListStopsDialog
 
 GCONF_DIR = '/apps/tramtracker/'
 GUID_KEY = GCONF_DIR + 'guid'
@@ -26,6 +28,7 @@ class Client(object):
         self.dialog = StopEntryDialog()
         self.dialog.show()
         self.dialog.connect('stop-entered', self.retrieve_stop_info)
+        self.dialog.connect('search-by-name', lambda *args: self.search_by_name())
         self.dialog.connect('destroy', lambda *args: gtk.main_quit())
 
         # self.update_database()
@@ -70,6 +73,29 @@ class Client(object):
 
         dialog = UpdateClientDialog(self.w, self.database, dateSince,
                     parent=self.dialog)
+
+    def search_by_name(self):
+        streets = self.database.getStreets()
+        dialog = FindByNameDialog(streets)
+        dialog.show()
+
+        def list_stops(stops):
+            dialog3 = ListStopsDialog(stops)
+            dialog3.show()
+            dialog3.connect('stop-entered', self.retrieve_stop_info)
+
+        def _callback(dialog, selection):
+            xstreets = self.database.getStreets(selection)
+            if len(xstreets) == 0:
+                list_stops(self.database.getStops(stopName=selection))
+            else:
+                dialog2 = FindByNameDialog(xstreets, selection)
+                dialog2.show()
+
+                def _callback2(dialog2, selection2):
+                    list_stops(self.database.getStops(street1=selection, street2=selection2))
+                dialog2.connect('selection-made', _callback2)
+        dialog.connect('selection-made', _callback)
 
 gobject.threads_init()
 gtk.set_application_name("Tram Tracker")

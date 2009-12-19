@@ -6,6 +6,7 @@ class StopEntryDialog(hildon.StackableWindow):
 
     __gsignals__ = {
         'stop-entered': (gobject.SIGNAL_RUN_LAST, None, (str,)),
+        'search-by-name': (gobject.SIGNAL_RUN_LAST, None, ())
     }
 
     def __init__(self):
@@ -38,5 +39,8 @@ class StopEntryDialog(hildon.StackableWindow):
 
     def _keypad_activate(self, button):
         self._entry_activate(self.entry)
+
+    def _find_by_street(self, button):
+        self.emit('search-by-name')
 
 gobject.type_register(StopEntryDialog)

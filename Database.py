@@ -1,8 +1,10 @@
 import sqlite3
 
 class Database(object):
+    conn = None
+
     def __init__(self):
-        self.conn = sqlite3.connect('tramtracker.db')
+        if self.conn is None: self.conn = sqlite3.connect('tramtracker.db')
 
     def setupStopsTable(self):
         c = self.conn.cursor()
@@ -84,10 +86,19 @@ class Database(object):
         c.close()
         return rows.fetchone()
 
-    def getStreets(self):
+    def getStreets(self, street=None):
+        query = 'SELECT StopName, CrossRoad, TravelRoad FROM stops'
+
+        if street:
+            query += ' WHERE StopName = ? OR CrossRoad = ? OR TravelRoad = ?'
+            params = (street, street, street)
+        else:
+            params = ()
+
         c = self.conn.cursor()
-        rows = c.execute('SELECT StopName, CrossRoad, TravelRoad FROM stops')
+        rows = c.execute(query, params)
         roads = set()
+
         for stopName, crossRoad, travelRoad in rows:
             addStopName = True
 
@@ -97,7 +108,26 @@ class Database(object):
             else:
                 roads.add(stopName)
 
+        if street: roads.remove(street)
+
         roads = list(roads)
         roads.sort()
 
         return roads
+
+    def getStops(self, stopName=None, street1=None, street2=None):
+        query = 'SELECT StopNo, FlagStopNo, StopName, CityDirection, SuburbName FROM stops '
+
+        if stopName:
+            query += ' WHERE StopName = ?'
+            params = (stopName,)
+        elif street1 and street2:
+            query += ''' WHERE (CrossRoad = ? AND TravelRoad = ?) OR
+                               (TravelRoad = ? AND CrossRoad = ?)'''
+            params = (street1, street2, street1, street2)
+
+        c = self.conn.cursor()
+        rows = list(c.execute(query, params))
+        c.close()
+
+        return rows
