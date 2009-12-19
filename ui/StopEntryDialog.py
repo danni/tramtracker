@@ -28,10 +28,13 @@ class StopEntryDialog(hildon.StackableWindow):
 
     def _keypad_button(self, button):
         v = button.get_label()
-        self.entry.set_text(self.entry.get_text() + v)
+        self.entry.insert_text(v, -1)
+        self.entry.set_position(-1)
 
     def _keypad_backspace(self, button):
-        self.entry.set_text(self.entry.get_text()[:-1])
+        pos = self.entry.get_position()
+        if pos > 0:
+            self.entry.delete_text(pos-1, pos)
 
     def _keypad_activate(self, button):
         self._entry_activate(self.entry)
