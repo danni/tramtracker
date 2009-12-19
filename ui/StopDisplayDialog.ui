@@ -45,6 +45,7 @@
                     <property name="label" translatable="yes">Stop ID:</property>
                   </object>
                   <packing>
+                    <property name="expand">False</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
@@ -54,6 +55,7 @@
                     <property name="xalign">0</property>
                   </object>
                   <packing>
+                    <property name="expand">False</property>
                     <property name="position">2</property>
                   </packing>
                 </child>
