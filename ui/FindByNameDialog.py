@@ -40,10 +40,11 @@ class FindByNameDialog(hildon.StackableWindow):
                     break
         entry.connect('changed', _entry_changed)
 
-        def _selector_changed(selector, column):
+        def _selector_changed(*args):
             if self._ignore_selection: return
             self.emit('selection-made', selector.get_current_text())
         selector.connect('changed', _selector_changed)
+	entry.connect('activate', _selector_changed)
 
         vbox.show_all()
 
