@@ -11,7 +11,7 @@ def format_arrival_time(now, arrival):
     minutes, seconds = divmod(r, 60)
     if hours == minutes == 0:
         return 'Now'
-    elif hours > 2 and date.today() != arrival.date():
+    elif hours > 2:
         return arrival.strftime('%d %b %H:%M')
     else:
         return ' '.join([ '%i %s' % (t, plural if t > 1 else single)
@@ -55,6 +55,7 @@ class StopDisplayDialog(hildon.StackableWindow):
     def set_tram_info(self, trams):
         now = datetime.now()
         self.model.clear()
+        trams.sort(lambda a, b: cmp(a['PredictedArrivalDateTime'], b['PredictedArrivalDateTime']) or cmp(a['RouteNo'], b['RouteNo']))
         for tram in trams:
             arrival = tram['PredictedArrivalDateTime']
             arrvstr = format_arrival_time(now, arrival)
