@@ -12,6 +12,7 @@ class FindByNameDialog(hildon.StackableWindow):
     def __init__(self, streets, street=None):
         hildon.StackableWindow.__init__(self)
         self.set_title('Find by Name')
+	self.set_border_width(6)
 
         vbox = gtk.VBox(spacing=3)
         self.add(vbox)

@@ -12,6 +12,7 @@ class ListStopsDialog(hildon.StackableWindow):
     def __init__(self, stops, labeltxt="Choose a stop:"):
         hildon.StackableWindow.__init__(self)
         self.set_title('Choose Stop')
+        self.set_border_width(6)
 
         vbox = gtk.VBox(spacing=3)
         self.add(vbox)

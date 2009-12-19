@@ -11,6 +11,7 @@ class StopEntryDialog(hildon.StackableWindow):
 
     def __init__(self):
     	hildon.Window.__init__(self)
+        self.set_border_width(6)
 
         self.ui = gtk.Builder()
         self.ui.add_from_file('ui/StopEntryDialog.ui')
