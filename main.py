@@ -2,12 +2,16 @@ import gtk
 import gobject
 import gconf
 
+from datetime import datetime
+
 from WebService import WebService
 from ui.StopEntryDialog import StopEntryDialog
 from ui.StopDisplayDialog import StopDisplayDialog
+from ui.UpdateClientDialog import UpdateClientDialog
 
 GCONF_DIR = '/apps/tramtracker/'
 GUID_KEY = GCONF_DIR + 'guid'
+LAST_UPDATED = GCONF_DIR + 'last_updated'
 
 class Client(object):
     def __init__(self):
@@ -21,6 +25,8 @@ class Client(object):
         self.dialog.show()
         self.dialog.connect('stop-entered', self.retrieve_stop_info)
         self.dialog.connect('destroy', lambda *args: gtk.main_quit())
+
+        self.update_database()
 
     def client_ready(self, guid):
         print "client ready:", guid
@@ -54,6 +60,11 @@ class Client(object):
         timeout_id = gobject.timeout_add_seconds(30, _update_trams)
         dialog.connect('destroy',
             lambda *args: gobject.source_remove(timeout_id))
+
+    def update_database(self):
+        dateSince = self.gconf.get_string(LAST_UPDATED)
+        if dateSince: dateSince = datetime.strptime(dateSince, '%Y-%m-%d')
+        dialog = UpdateClientDialog(self.w, dateSince, parent=self.dialog)
 
 gobject.threads_init()
 gtk.set_application_name("Tram Tracker")

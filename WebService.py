@@ -62,7 +62,8 @@ class WebService(ThreadQueue):
         return self.guid
 
     @async_method
-    def GetStopsAndRoutesUpdatesSince(self, dateSince=datetime(year=2009, month=7, day=8)):
+    def GetStopsAndRoutesUpdatesSince(self, dateSince=None):
+        if dateSince is None: dateSince = datetime(year=2009, month=7, day=8)
         reply = self.client.service.GetStopsAndRoutesUpdatesSince(dateSince)
         try:
             stops = reply.GetStopsAndRoutesUpdatesSinceResult.diffgram.dsCoreDataChanges.dtStopsChanges
