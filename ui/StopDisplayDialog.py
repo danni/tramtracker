@@ -1,15 +1,18 @@
-from datetime import datetime
+from datetime import datetime, date
 
 import gtk
 import gobject
 import pango
 import hildon
 
-def format_arrival_time(delta):
+def format_arrival_time(now, arrival):
+    delta = arrival - now
     hours, r = divmod(delta.seconds, 3600)
     minutes, seconds = divmod(r, 60)
     if hours == minutes == 0:
         return 'Now'
+    elif hours > 2 and date.today() != arrival.date():
+        return arrival.strftime('%d %b %H:%M')
     else:
         return ' '.join([ '%i %s' % (t, plural if t > 1 else single)
                            for (t, single, plural)
@@ -54,12 +57,7 @@ class StopDisplayDialog(hildon.StackableWindow):
         self.model.clear()
         for tram in trams:
             arrival = tram['PredictedArrivalDateTime']
-
-            if now.date() == arrival.date():
-                delta = arrival - now
-                arrvstr = format_arrival_time(delta)
-            else:
-                arrvstr = arrival.strftime('%H:%M\n%d %b')
+            arrvstr = format_arrival_time(now, arrival)
 
             self.model.append((tram['RouteNo'], tram['Destination'], arrvstr, tram))
 
