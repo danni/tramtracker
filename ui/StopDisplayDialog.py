@@ -8,7 +8,7 @@ import hildon
 def format_arrival_time(delta):
     hours, r = divmod(delta.seconds, 3600)
     minutes, seconds = divmod(r, 60)
-    if hours == seconds == 0:
+    if hours == minutes == 0:
         return 'Now'
     else:
         return ' '.join([ '%i %s' % (t, plural if t > 1 else single)

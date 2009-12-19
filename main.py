@@ -26,6 +26,7 @@ class Client(object):
         dialog.show()
 
         def _update_trams():
+            dialog.set_progress_indicator(True)
             self.w.GetNextPredictedRoutesCollection(stopNo,
                 callback=_got_trams)
             return True
@@ -34,6 +35,7 @@ class Client(object):
             dialog.set_stop_info(stopinfo)
 
         def _got_trams(trams):
+            # print trams
             dialog.set_progress_indicator(False)
             dialog.set_tram_info(trams)
 
