@@ -33,11 +33,16 @@ class StopDisplayDialog(hildon.StackableWindow):
         contents = self.ui.get_object('stop-display-dialog-contents')
         self.add(contents)
 
-        # fsn = self.ui.get_object('FlagStopNo')
-        # attributes = pango.AttrList()
-        # attributes.insert(pango.AttrSize(24))
-        # attributes.insert(pango.AttrWeight(pango.WEIGHT_BOLD))
-        # fsn.set_attributes(attributes)
+        label = self.ui.get_object('FlagStopNo')
+        attributes = pango.AttrList()
+        attributes.insert(pango.AttrScale(pango.SCALE_X_LARGE, end_index=-1))
+        attributes.insert(pango.AttrWeight(pango.WEIGHT_BOLD, end_index=-1))
+        label.set_attributes(attributes)
+
+        label = self.ui.get_object('StopName')
+        attributes = pango.AttrList()
+        attributes.insert(pango.AttrScale(pango.SCALE_LARGE, end_index=-1))
+        label.set_attributes(attributes)
 
         self.model = gtk.ListStore(str, str, str, gobject.TYPE_PYOBJECT)
         self.ui.get_object('tramlisting').set_model(self.model)
@@ -48,6 +53,11 @@ class StopDisplayDialog(hildon.StackableWindow):
         hildon.hildon_gtk_window_set_progress_indicator(self, state)
 
     def set_stop_info(self, stopinfo):
+        try:
+            self.set_title('%(StopName)s %(CityDirection)s' % stopinfo)
+        except KeyError:
+            pass
+
         for key, value in stopinfo.items():
             label = self.ui.get_object (key)
             if label is None: continue

@@ -6,15 +6,15 @@
     <property name="visible">True</property>
     <property name="orientation">vertical</property>
     <child>
-      <object class="GtkHBox" id="hbox3">
-        <property name="visible">True</property>
-        <property name="spacing">3</property>
-        <child>
           <object class="GtkVBox" id="vbox3">
             <property name="visible">True</property>
             <property name="orientation">vertical</property>
             <property name="spacing">3</property>
             <child>
+      <object class="GtkHBox" id="hbox3">
+        <property name="visible">True</property>
+        <property name="spacing">3</property>
+        <child>
               <object class="GtkLabel" id="StopName">
                 <property name="visible">True</property>
                 <property name="xalign">0</property>
@@ -23,6 +23,17 @@
               <packing>
                 <property name="position">0</property>
               </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="FlagStopNo">
+            <property name="visible">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
             </child>
             <child>
               <object class="GtkHBox" id="hbox4">
@@ -68,17 +79,6 @@
           <packing>
             <property name="position">0</property>
           </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="FlagStopNo">
-            <property name="visible">True</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-      </object>
       <packing>
         <property name="expand">False</property>
         <property name="position">0</property>
