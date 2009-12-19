@@ -31,7 +31,7 @@ class Client(object):
         self.dialog.connect('search-by-name', lambda *args: self.search_by_name())
         self.dialog.connect('destroy', lambda *args: gtk.main_quit())
 
-        # self.update_database()
+        self.update_database()
 
     def client_ready(self, guid):
         print "client ready:", guid
@@ -69,10 +69,15 @@ class Client(object):
     def update_database(self):
         dateSince = self.gconf.get_string(LAST_UPDATED)
         if dateSince: dateSince = datetime.strptime(dateSince, '%Y-%m-%d')
-        if dateSince.date() == date.today(): return
+        if dateSince and dateSince.date() == date.today(): return
 
         dialog = UpdateClientDialog(self.w, self.database, dateSince,
                     parent=self.dialog)
+
+        def _callback(dialog):
+            print 'Successful sync'
+            self.gconf.set_string(LAST_UPDATED, date.today().strftime('%Y-%m-%d'))
+        dialog.connect('successful-sync', _callback)
 
     def search_by_name(self):
         streets = self.database.getStreets()

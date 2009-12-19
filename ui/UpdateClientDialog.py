@@ -3,6 +3,9 @@ import gobject
 import hildon
 
 class UpdateClientDialog(gtk.Dialog):
+    __gsignals__ = {
+        'successful-sync': (gobject.SIGNAL_RUN_LAST, None, ())
+    }
 
     def __init__(self, w, database, dateSince, parent=None):
         gtk.Dialog.__init__(self, title='Update Stops Database', parent=parent)
@@ -57,7 +60,9 @@ class UpdateClientDialog(gtk.Dialog):
 
     def get_next_stop(self):
         try: stopNo, action = self._update_iter.next()
-        except StopIteration: self._continue_download = False
+        except StopIteration:
+            self.emit('successful-sync')
+            self._continue_download = False
 
         if not self._continue_download:
             self.destroy()
@@ -65,6 +70,8 @@ class UpdateClientDialog(gtk.Dialog):
 
         if action == 'DELETE':
             self.database.deleteStop(stopNo)
+            self.get_next_stop()
+            return
         elif action == 'UPDATE':
             self.w.GetStopInformation(stopNo, callback=self.got_info)
 
