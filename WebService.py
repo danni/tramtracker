@@ -139,7 +139,7 @@ class WebService(ThreadQueue):
         except AttributeError, e:
             if reply.validationResult != "":
                 print reply.validationResult
-                return {}
+                return []
             else:
                 raise e
 
