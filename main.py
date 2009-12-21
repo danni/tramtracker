@@ -29,6 +29,7 @@ class Client(object):
         self.dialog.show()
         self.dialog.connect('stop-entered', self.retrieve_stop_info)
         self.dialog.connect('search-by-name', lambda *args: self.search_by_name())
+        self.dialog.connect('update-database', lambda *args: self.update_database(force=True))
         self.dialog.connect('destroy', lambda *args: gtk.main_quit())
         self.database.connect('database-created', lambda *args: self.update_database(initial_sync=True))
 
@@ -70,7 +71,7 @@ class Client(object):
         dialog.connect('destroy',
             lambda *args: gobject.source_remove(timeout_id))
 
-    def update_database(self, initial_sync=False):
+    def update_database(self, initial_sync=False, force=False):
         kwargs = {}
 
         if initial_sync:
@@ -81,7 +82,7 @@ class Client(object):
 
         if dateSince is None:
             kwargs['title'] = 'Download Stops Database'
-        elif dateSince.date() == date.today(): return
+        elif not force and (date.today() - dateSince.date()).days < 7: return
 
         dialog = UpdateClientDialog(self.w, self.database, dateSince, **kwargs)
 

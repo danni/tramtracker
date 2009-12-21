@@ -65,7 +65,6 @@ class WebService(ThreadQueue):
     def GetStopsAndRoutesUpdatesSince(self, dateSince=None):
         if dateSince is None: dateSince = datetime(year=2009, month=7, day=8)
         reply = self.client.service.GetStopsAndRoutesUpdatesSince(dateSince)
-	print reply
         try:
             diffgram = reply.GetStopsAndRoutesUpdatesSinceResult.diffgram
 	    if diffgram == "": return []

@@ -13,6 +13,10 @@ class UpdateClientDialog(gtk.Dialog):
         self.database = database
         self._continue_download = True
 
+        vbox = gtk.VBox(spacing = 3)
+        vbox.set_border_width(6)
+        self.vbox.pack_start(vbox)
+
         hbox = gtk.HBox(spacing = 3)
         yes_button = hildon.Button(gtk.HILDON_SIZE_AUTO,
                                    hildon.BUTTON_ARRANGEMENT_VERTICAL,
@@ -22,21 +26,23 @@ class UpdateClientDialog(gtk.Dialog):
                                   "No")
         hbox.pack_start(yes_button)
         hbox.pack_start(no_button)
+        vbox.pack_start(hbox)
 
-        self.vbox.pack_start(hbox)
+        if dateSince: str = dateSince.strftime('%d %b %Y')
+        else: str = 'Never'
+        self.label = gtk.Label("Database last updated: %s" % str)
+        self.label.set_alignment(0., 0.5)
+        vbox.pack_start(self.label, expand=False)
+
         self.show_all()
 
         def _update_callback(*args):
             hbox.destroy()
             self.add_button(gtk.STOCK_CANCEL, gtk.RESPONSE_ACCEPT)
 
-            vbox = gtk.VBox(spacing = 3)
-            self.vbox.pack_start(vbox)
             self.set_progress_indicator(True)
 
-            self.label = gtk.Label("Requesting list of updated stops...")
-            self.label.set_alignment(0., 0.5)
-            vbox.pack_start(self.label, expand=False)
+            self.label.set_text("Requesting list of updated stops...")
 
             self.progressbar = gtk.ProgressBar()
             vbox.pack_start(self.progressbar)
