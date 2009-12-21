@@ -61,7 +61,7 @@ class StopDisplayDialog(hildon.StackableWindow):
         for key, value in stopinfo.items():
             label = self.ui.get_object (key)
             if label is None: continue
-            label.set_text(value)
+            label.set_text(str(value))
 
     def set_tram_info(self, trams):
         now = datetime.now()

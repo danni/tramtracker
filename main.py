@@ -30,6 +30,7 @@ class Client(object):
         self.dialog.connect('stop-entered', self.retrieve_stop_info)
         self.dialog.connect('search-by-name', lambda *args: self.search_by_name())
         self.dialog.connect('destroy', lambda *args: gtk.main_quit())
+        self.database.connect('database-created', lambda *args: self.update_database(initial_sync=True))
 
         self.update_database()
 
@@ -38,9 +39,19 @@ class Client(object):
         self.gconf.set_string(GUID_KEY, guid)
 
     def retrieve_stop_info(self, dialog, stopNo):
+        try:
+            stopinfo = self.database.getStop(stopNo)
+        except Exception, e:
+            dialog = gtk.Dialog(title=e.message)
+            dialog.show()
+            dialog.run()
+            dialog.destroy()
+            return
+
         dialog = StopDisplayDialog()
         dialog.set_stop_info({'StopNo': stopNo})
         dialog.set_progress_indicator(True)
+        dialog.set_stop_info(stopinfo)
         dialog.show()
 
         def _update_trams():
@@ -49,30 +60,30 @@ class Client(object):
                 callback=_got_trams)
             return True
 
-        def _got_stop(stopinfo):
-            dialog.set_stop_info(stopinfo)
-            self.database.storeStop(stopinfo)
-
         def _got_trams(trams):
             # print trams
             dialog.set_progress_indicator(False)
             dialog.set_tram_info(trams)
-
-        self.w.GetStopInformation(stopNo,
-            callback=_got_stop)
 
         _update_trams()
         timeout_id = gobject.timeout_add_seconds(30, _update_trams)
         dialog.connect('destroy',
             lambda *args: gobject.source_remove(timeout_id))
 
-    def update_database(self):
-        dateSince = self.gconf.get_string(LAST_UPDATED)
-        if dateSince: dateSince = datetime.strptime(dateSince, '%Y-%m-%d')
-        if dateSince and dateSince.date() == date.today(): return
+    def update_database(self, initial_sync=False):
+        kwargs = {}
 
-        dialog = UpdateClientDialog(self.w, self.database, dateSince,
-                    parent=self.dialog)
+        if initial_sync:
+            dateSince = None
+        else:
+            dateSince = self.gconf.get_string(LAST_UPDATED)
+            dateSince = datetime.strptime(dateSince, '%Y-%m-%d')
+
+        if dateSince is None:
+            kwargs['title'] = 'Download Stops Database'
+        elif dateSince.date() == date.today(): return
+
+        dialog = UpdateClientDialog(self.w, self.database, dateSince, **kwargs)
 
         def _callback(dialog):
             print 'Successful sync'
@@ -83,6 +94,8 @@ class Client(object):
         streets = self.database.getStreets()
         dialog = FindByNameDialog(streets)
         dialog.show()
+
+        if len(streets) == 0: self.update_database(initial_sync=True)
 
         def list_stops(stops):
             dialog3 = ListStopsDialog(stops)

@@ -7,8 +7,8 @@ class UpdateClientDialog(gtk.Dialog):
         'successful-sync': (gobject.SIGNAL_RUN_LAST, None, ())
     }
 
-    def __init__(self, w, database, dateSince, parent=None):
-        gtk.Dialog.__init__(self, title='Update Stops Database', parent=parent)
+    def __init__(self, w, database, dateSince, title='Update Stops Database', parent=None):
+        gtk.Dialog.__init__(self, title=title, parent=parent)
         self.w = w
         self.database = database
         self._continue_download = True

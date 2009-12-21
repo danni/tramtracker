@@ -1,10 +1,19 @@
-import sqlite3
+import gobject
 
-class Database(object):
+import sqlite3
+import os.path
+
+class Database(gobject.GObject):
+    __gsignals__ = {
+        'database-created': (gobject.SIGNAL_RUN_LAST, None, ())
+    }
     conn = None
 
     def __init__(self):
-        if self.conn is None: self.conn = sqlite3.connect('tramtracker.db')
+        gobject.GObject.__init__(self)
+
+        if self.conn is None:
+            self.conn = sqlite3.connect(os.path.expanduser('~/.cache/tramtracker.db'))
 
     def setupStopsTable(self):
         c = self.conn.cursor()
@@ -20,6 +29,7 @@ class Database(object):
                         SuburbName TEXT)''')
         self.conn.commit()
         c.close()
+        self.emit('database-created')
 
     def deleteStop(self, stopNo):
         c = self.conn.cursor()
@@ -79,12 +89,23 @@ class Database(object):
 
     def getStop(self, stopNo):
         c = self.conn.cursor()
-        rows = c.execute('SELECT * FROM stops WHERE StopNo = ?', (stopNo,))
-        if len(rows) > 1:
-            raise Exception("Too many rows returned for stopNo %i" % stopNo)
+        try:
+            rows = c.execute('SELECT * FROM stops WHERE StopNo = ?', (stopNo,))
+        except sqlite3.OperationalError, e:
+            if e.message.startswith('no such table'):
+                self.setupStopsTable()
+                c.close()
+                return {}
+            else:
+                raise e
+
+        try:
+            row = dict(zip(map(lambda a: a[0], rows.description), rows.fetchone()))
+        except TypeError, e:
+            raise Exception("Unknown Stop ID %s" % stopNo)
 
         c.close()
-        return rows.fetchone()
+        return row
 
     def getStreets(self, street=None):
         query = 'SELECT StopName, CrossRoad, TravelRoad FROM stops'
@@ -96,7 +117,16 @@ class Database(object):
             params = ()
 
         c = self.conn.cursor()
-        rows = c.execute(query, params)
+        try:
+            rows = c.execute(query, params)
+        except sqlite3.OperationalError, e:
+            if e.message.startswith('no such table'):
+                self.setupStopsTable()
+                c.close()
+                return []
+            else:
+                raise e
+
         roads = set()
 
         for stopName, crossRoad, travelRoad in rows:
@@ -127,7 +157,18 @@ class Database(object):
             params = (street1, street2, street1, street2)
 
         c = self.conn.cursor()
-        rows = list(c.execute(query, params))
+        try:
+            rows = list(c.execute(query, params))
+        except sqlite3.OperationalError, e:
+            if e.message.startswith('no such table'):
+                self.setupStopsTable()
+                c.close()
+                return []
+            else:
+                raise e
+
         c.close()
 
         return rows
+
+gobject.type_register(Database)

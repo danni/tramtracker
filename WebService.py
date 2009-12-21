@@ -65,8 +65,11 @@ class WebService(ThreadQueue):
     def GetStopsAndRoutesUpdatesSince(self, dateSince=None):
         if dateSince is None: dateSince = datetime(year=2009, month=7, day=8)
         reply = self.client.service.GetStopsAndRoutesUpdatesSince(dateSince)
+	print reply
         try:
-            stops = reply.GetStopsAndRoutesUpdatesSinceResult.diffgram.dsCoreDataChanges.dtStopsChanges
+            diffgram = reply.GetStopsAndRoutesUpdatesSinceResult.diffgram
+	    if diffgram == "": return []
+	    stops = diffgram.dsCoreDataChanges.dtStopsChanges
             return map(lambda stop: (stop.StopNo, stop.Action), stops)
 
         except AttributeError, e:
