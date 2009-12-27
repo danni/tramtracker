@@ -19,6 +19,7 @@
             <child>
               <object class="GtkHBox" id="hbox2">
                 <property name="visible">True</property>
+                <property name="spacing">6</property>
                 <child>
                   <object class="GtkLabel" id="label1">
                     <property name="visible">True</property>
@@ -26,6 +27,7 @@
                     <property name="label" translatable="yes">Enter Stop ID:</property>
                   </object>
                   <packing>
+                    <property name="expand">False</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
@@ -34,16 +36,35 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="max_length">4</property>
-                    <property name="invisible_char">&#x2022;</property>
-                    <property name="width_chars">4</property>
+                    <property name="text_length">4</property>
                     <signal name="activate" handler="_entry_activate"/>
                   </object>
                   <packing>
                     <property name="position">1</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkButton" id="button15">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">True</property>
+                    <signal name="clicked" handler="_show_favourites"/>
+                    <child>
+                      <object class="GtkImage" id="image1">
+                        <property name="visible">True</property>
+                        <property name="icon_name">imageviewer_favourite</property>
+                      </object>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
               </object>
               <packing>
+                <property name="expand">False</property>
+                <property name="padding">3</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -64,7 +85,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="receives_default">True</property>
-		<signal name="clicked" handler="_find_by_street"/>
+                <signal name="clicked" handler="_find_by_street"/>
               </object>
               <packing>
                 <property name="position">2</property>

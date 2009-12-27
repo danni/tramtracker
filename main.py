@@ -11,10 +11,12 @@ from ui.StopDisplayDialog import StopDisplayDialog
 from ui.UpdateClientDialog import UpdateClientDialog
 from ui.FindByNameDialog import FindByNameDialog
 from ui.ListStopsDialog import ListStopsDialog
+from ui.FavouriteStopsDialog import FavouriteStopsDialog
 
 GCONF_DIR = '/apps/tramtracker/'
 GUID_KEY = GCONF_DIR + 'guid'
 LAST_UPDATED = GCONF_DIR + 'last_updated'
+FAVOURITE_STOPS = GCONF_DIR + 'favourite_stops'
 
 class Client(object):
     def __init__(self):
@@ -30,6 +32,7 @@ class Client(object):
         self.dialog.connect('stop-entered', self.retrieve_stop_info)
         self.dialog.connect('search-by-name', lambda *args: self.search_by_name())
         self.dialog.connect('update-database', lambda *args: self.update_database(force=True))
+        self.dialog.connect('show-favourites', lambda *args: self.show_favourites())
         self.dialog.connect('destroy', lambda *args: gtk.main_quit())
         self.database.connect('database-created', lambda *args: self.update_database(initial_sync=True))
 
@@ -50,10 +53,12 @@ class Client(object):
             return
 
         dialog = StopDisplayDialog()
-        dialog.set_stop_info({'StopNo': stopNo})
-        dialog.set_progress_indicator(True)
         dialog.set_stop_info(stopinfo)
+        dialog.set_progress_indicator(True)
         dialog.show()
+
+        fav_stops = self.gconf.get_list(FAVOURITE_STOPS, gconf.VALUE_INT)
+        dialog.set_favourite(dialog.stopNo in fav_stops)
 
         def _update_trams():
             dialog.set_progress_indicator(True)
@@ -66,10 +71,21 @@ class Client(object):
             dialog.set_progress_indicator(False)
             dialog.set_tram_info(trams)
 
+        def _favourite_toggled(dialog, favourited):
+            fav_stops = self.gconf.get_list(FAVOURITE_STOPS, gconf.VALUE_INT)
+
+            if favourited:
+                fav_stops.append(dialog.stopNo)
+            else:
+                fav_stops.remove(dialog.stopNo)
+
+            self.gconf.set_list(FAVOURITE_STOPS, gconf.VALUE_INT, fav_stops)
+
         _update_trams()
         timeout_id = gobject.timeout_add_seconds(30, _update_trams)
         dialog.connect('destroy',
             lambda *args: gobject.source_remove(timeout_id))
+        dialog.connect('favourite-toggled', _favourite_toggled)
 
     def update_database(self, initial_sync=False, force=False):
         kwargs = {}
@@ -115,6 +131,14 @@ class Client(object):
                     list_stops(self.database.getStops(street1=selection, street2=selection2))
                 dialog2.connect('selection-made', _callback2)
         dialog.connect('selection-made', _callback)
+
+    def show_favourites(self):
+        fav_stops = map(self.database.getStop,
+            self.gconf.get_list(FAVOURITE_STOPS, gconf.VALUE_INT))
+
+        dialog = FavouriteStopsDialog(fav_stops)
+        dialog.show()
+        dialog.connect('stop-entered', self.retrieve_stop_info)
 
 gobject.threads_init()
 gtk.set_application_name("Tram Tracker")

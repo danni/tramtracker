@@ -8,6 +8,7 @@ class StopEntryDialog(hildon.StackableWindow):
         'stop-entered': (gobject.SIGNAL_RUN_LAST, None, (str,)),
         'search-by-name': (gobject.SIGNAL_RUN_LAST, None, ()),
 	'update-database': (gobject.SIGNAL_RUN_LAST, None, ()),
+	'show-favourites': (gobject.SIGNAL_RUN_LAST, None, ()),
     }
 
     def __init__(self):
@@ -24,15 +25,15 @@ class StopEntryDialog(hildon.StackableWindow):
 
         self.ui.connect_signals(self)
 
-	# create menu
-	menu = hildon.AppMenu()
-	button = hildon.GtkButton(gtk.HILDON_SIZE_AUTO)
-	button.set_label('Update Stops Database')
-	button.connect('clicked', lambda *args: self.emit('update-database'))
-	menu.append(button)
-	menu.show_all()
+        # create menu
+        menu = hildon.AppMenu()
+        button = hildon.GtkButton(gtk.HILDON_SIZE_AUTO)
+        button.set_label('Update Stops Database')
+        button.connect('clicked', lambda *args: self.emit('update-database'))
+        menu.append(button)
+        menu.show_all()
 
-	self.set_app_menu(menu)
+        self.set_app_menu(menu)
 
     def _entry_activate(self, entry):
         stopNo = entry.get_text()
@@ -54,5 +55,8 @@ class StopEntryDialog(hildon.StackableWindow):
 
     def _find_by_street(self, button):
         self.emit('search-by-name')
+
+    def _show_favourites(self, button):
+        self.emit('show-favourites')
 
 gobject.type_register(StopEntryDialog)

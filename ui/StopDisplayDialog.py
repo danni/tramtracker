@@ -23,8 +23,14 @@ def format_arrival_time(now, arrival):
 class StopDisplayDialog(hildon.StackableWindow):
     ROUTE_NO, ROUTE_DIRECTION, ARRIVAL_TIME, TRAM = range(4)
 
+    __gsignals__ = {
+        'favourite-toggled': (gobject.SIGNAL_RUN_LAST, None, (bool,)),
+    }
+
     def __init__(self):
         hildon.StackableWindow.__init__(self)
+        self._block_favourite_toggle = 0
+
         self.set_border_width(6)
 
         self.ui = gtk.Builder()
@@ -52,9 +58,19 @@ class StopDisplayDialog(hildon.StackableWindow):
     def set_progress_indicator(self, state):
         hildon.hildon_gtk_window_set_progress_indicator(self, state)
 
+    def set_favourite(self, favourite):
+        self._block_favourite_toggle += 1
+        self.ui.get_object('favourited').set_active(favourite)
+        self._block_favourite_toggle -= 1
+
     def set_stop_info(self, stopinfo):
         try:
             self.set_title('%(StopName)s %(CityDirection)s' % stopinfo)
+        except KeyError:
+            pass
+
+        try:
+            self.stopNo = stopinfo['StopNo']
         except KeyError:
             pass
 
@@ -72,5 +88,9 @@ class StopDisplayDialog(hildon.StackableWindow):
             arrvstr = format_arrival_time(now, arrival)
 
             self.model.append((tram['RouteNo'], tram['Destination'], arrvstr, tram))
+
+    def _favourite_toggled(self, button):
+        if self._block_favourite_toggle > 0: return
+        self.emit('favourite-toggled', button.get_active())
 
 gobject.type_register(StopDisplayDialog)
