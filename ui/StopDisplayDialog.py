@@ -89,6 +89,14 @@ class StopDisplayDialog(hildon.StackableWindow):
 
             self.model.append((tram['RouteNo'], tram['Destination'], arrvstr, tram))
 
+    def _return_to_main(self, button):
+        # return to the top screen
+        stack = hildon.WindowStack.get_default()
+        windows = stack.get_windows()
+        windows.reverse()
+        windows.pop(0)
+        for window in windows: window.destroy()
+
     def _favourite_toggled(self, button):
         if self._block_favourite_toggle > 0: return
         self.emit('favourite-toggled', button.get_active())
