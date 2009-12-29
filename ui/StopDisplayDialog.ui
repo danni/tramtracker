@@ -138,6 +138,16 @@
       </packing>
     </child>
     <child>
+      <object class="GtkLabel" id="special-message">
+        <property name="visible">False</property>
+        <property name="wrap">True</property>
+      </object>
+      <packing>
+        <property name="position">2</property>
+        <property name="expand">False</property>
+      </packing>
+    </child>
+    <child>
       <object class="GtkHBox" id="hbox1">
         <property name="visible">True</property>
         <property name="spacing">3</property>
@@ -192,7 +202,7 @@
       </object>
       <packing>
         <property name="expand">False</property>
-        <property name="position">2</property>
+        <property name="position">3</property>
       </packing>
     </child>
   </object>

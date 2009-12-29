@@ -89,6 +89,16 @@ class StopDisplayDialog(hildon.StackableWindow):
 
             self.model.append((tram['RouteNo'], tram['Destination'], arrvstr, tram))
 
+        messages = set([ tram['SpecialEventMessage']
+                            for tram in trams if tram['HasSpecialEvent'] ])
+        label = self.ui.get_object('special-message')
+        if len(messages) > 0:
+            label.set_label('\n\n'.join(messages))
+            label.set_size_request(700, -1)
+            label.show()
+        else:
+            label.hide()
+
     def _return_to_main(self, button):
         # return to the top screen
         stack = hildon.WindowStack.get_default()
