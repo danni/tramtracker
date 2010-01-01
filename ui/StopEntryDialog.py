@@ -7,8 +7,9 @@ class StopEntryDialog(hildon.StackableWindow):
     __gsignals__ = {
         'stop-entered': (gobject.SIGNAL_RUN_LAST, None, (str,)),
         'search-by-name': (gobject.SIGNAL_RUN_LAST, None, ()),
-	'update-database': (gobject.SIGNAL_RUN_LAST, None, ()),
-	'show-favourites': (gobject.SIGNAL_RUN_LAST, None, ()),
+        'find-nearby-stops': (gobject.SIGNAL_RUN_LAST, None, ()),
+        'update-database': (gobject.SIGNAL_RUN_LAST, None, ()),
+        'show-favourites': (gobject.SIGNAL_RUN_LAST, None, ()),
     }
 
     def __init__(self):
@@ -55,6 +56,9 @@ class StopEntryDialog(hildon.StackableWindow):
 
     def _find_by_street(self, button):
         self.emit('search-by-name')
+
+    def _find_nearby_stops(self, button):
+        self.emit('find-nearby-stops')
 
     def _show_favourites(self, button):
         self.emit('show-favourites')

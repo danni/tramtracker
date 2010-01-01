@@ -9,9 +9,10 @@ class ListStopsDialog(hildon.StackableWindow):
         'stop-entered': (gobject.SIGNAL_RUN_LAST, None, (str,)),
     }
 
-    def __init__(self, stops, labeltxt="Choose a stop:", with_distance=False):
+    def __init__(self, stops, labeltxt="Choose a stop:", with_distance=False,
+                       titletxt="Choose Stop"):
         hildon.StackableWindow.__init__(self)
-        self.set_title('Choose Stop')
+        self.set_title(titletxt)
         self.set_border_width(6)
 
         vbox = gtk.VBox(spacing=3)

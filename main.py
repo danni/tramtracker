@@ -2,6 +2,8 @@ import gtk
 import gobject
 import gconf
 
+import location
+
 from datetime import datetime, date
 
 from WebService import WebService
@@ -31,6 +33,7 @@ class Client(object):
         self.dialog.show()
         self.dialog.connect('stop-entered', self.retrieve_stop_info)
         self.dialog.connect('search-by-name', lambda *args: self.search_by_name())
+        self.dialog.connect('find-nearby-stops', lambda *args: self.find_nearby_stops())
         self.dialog.connect('update-database', lambda *args: self.update_database(force=True))
         self.dialog.connect('show-favourites', lambda *args: self.show_favourites())
         self.dialog.connect('destroy', lambda *args: gtk.main_quit())
@@ -39,7 +42,6 @@ class Client(object):
         self.update_database()
 
     def client_ready(self, guid):
-        print "client ready:", guid
         self.gconf.set_string(GUID_KEY, guid)
 
     def retrieve_stop_info(self, dialog, stopNo):
@@ -84,7 +86,8 @@ class Client(object):
         def _find_nearby_stops(dialog, lat, long):
             stops = self.database.getNearbyStops(lat, long,
                         exclude_stop=dialog.stopNo)
-            dialog2 = ListStopsDialog(stops, with_distance=True)
+            dialog2 = ListStopsDialog(stops, with_distance=True,
+                                        titletxt='Nearby Stops')
             dialog2.connect('stop-entered', self.retrieve_stop_info)
             dialog2.show()
 
@@ -147,6 +150,24 @@ class Client(object):
         dialog = FavouriteStopsDialog(fav_stops)
         dialog.show()
         dialog.connect('stop-entered', self.retrieve_stop_info)
+
+    def find_nearby_stops(self):
+        dialog = ListStopsDialog([], titletxt="Nearby Stops")
+        dialog.show()
+
+        control = location.GPSDControl.get_default()
+        device = location.GPSDevice()
+
+        control.set_properties(preferred_method=location.METHOD_GNSS|location.METHOD_AGNSS)
+        control.set_properties(preferred_interval=location.INTERVAL_60S)
+
+        def location_updated(device):
+            if device.fix:
+                if device.fix[1] & location.GPS_DEVICE_LATLONG_SET:
+                    print "lat = %f, long = %f" % device.fix[4:6]
+
+        # dialog.connect('destroy', shutdown_gps)
+        device.connect('changed', location_updated)
 
 gobject.threads_init()
 gtk.set_application_name("Tram Tracker")
