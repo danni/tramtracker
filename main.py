@@ -154,22 +154,63 @@ class Client(object):
         dialog.connect('stop-entered', self.retrieve_stop_info)
 
     def find_nearby_stops(self):
-        dialog = ListStopsDialog([], titletxt="Nearby Stops")
-        dialog.show()
-
         control = location.GPSDControl.get_default()
         device = location.GPSDevice()
 
-        control.set_properties(preferred_method=location.METHOD_GNSS|location.METHOD_AGNSS)
-        control.set_properties(preferred_interval=location.INTERVAL_60S)
+        dialog = ListStopsDialog([], titletxt="Nearby Stops",
+                                    with_distance=True)
+
+        def shutdown_gps(dialog):
+            control.stop()
+
+        dialog.connect('stop-entered', self.retrieve_stop_info)
+        dialog.connect('destroy', shutdown_gps)
+
+        dialog.show()
+
+        control.set_properties(
+            preferred_method=location.METHOD_GNSS|location.METHOD_AGNSS,
+            preferred_interval=location.INTERVAL_DEFAULT)
+
+        def gps_error(control, error):
+            if error == location.ERROR_USER_REJECTED_DIALOG:
+                msg = 'Requested GPS method disabled'
+            elif error == location.ERROR_USER_REJECTED_SETTINGS:
+                msg = 'GPS disabled'
+            elif error == location.ERROR_BT_GPS_NOT_AVAILABLE:
+                msg = 'External GPS not available'
+            elif error == location.ERROR_METHOD_NOT_ALLOWED_IN_OFFLINE_MODE:
+                msg = 'Location service not available in offline mode'
+            elif error == location.ERROR_SYSTEM:
+                msg = 'GPS not available'
+
+            dialog2 = gtk.Dialog(parent=dialog, title='GPS Error')
+            dialog2.vbox.pack_start(gtk.Label(msg))
+            dialog2.show_all()
+            dialog2.run()
+            dialog2.destroy()
+            dialog.destroy()
 
         def location_updated(device):
+            print "location updated", device.fix
+            print device.online
+            print device.status
+            print device.satellites_in_view
+            print device.satellites_in_use
             if device.fix:
                 if device.fix[1] & location.GPS_DEVICE_LATLONG_SET:
-                    print "lat = %f, long = %f" % device.fix[4:6]
+                    lat, long = device.fix[4:6]
+                    print "lat = %f, long = %f" % (lat, long)
+                    stops = self.database.getNearbyStops(lat, long)
+                    dialog.setStops(stops)
 
-        # dialog.connect('destroy', shutdown_gps)
+        control.connect('error-verbose', gps_error)
         device.connect('changed', location_updated)
+
+        control.start()
+
+        # FIXME: does changed ever get called?
+        location_updated(device)
 
 gobject.threads_init()
 gtk.set_application_name("Tram Tracker")

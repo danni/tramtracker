@@ -53,4 +53,7 @@ class StopList(hildon.PannableArea):
             "%i m" % int(stopinfo.get('Distance', 0) * 1000),
         ))
 
+    def clear(self):
+        self.store.clear()
+
 gobject.type_register(StopList)
