@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=0.1
+Type=Application
+Name=TramTracker
+Exec=/usr/bin/tramtracker
+Icon=tramtracker
+X-Window-Icon=tramtracker
+X-Window-Icon-Dimmed=tramtracker
+X-Osso-Service=au.id.madeley.danni.TramTracker
+X-Osso-Type=application/x-executable

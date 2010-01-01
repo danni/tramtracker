@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cd /usr/share/tramtracker
+exec python2.5 main.py
