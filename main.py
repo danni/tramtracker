@@ -105,6 +105,8 @@ class Client(object):
             dateSince = None
         else:
             dateSince = self.gconf.get_string(LAST_UPDATED)
+
+	if dateSince is not None:
             dateSince = datetime.strptime(dateSince, '%Y-%m-%d')
 
         if dateSince is None:
