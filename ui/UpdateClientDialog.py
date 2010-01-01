@@ -8,6 +8,10 @@ class UpdateClientDialog(gtk.Dialog):
     }
 
     def __init__(self, w, database, dateSince, title='Update Stops Database', parent=None):
+        if parent is None:
+            stack = hildon.WindowStack.get_default()
+            parent = stack.get_windows()[-1]
+
         gtk.Dialog.__init__(self, title=title, parent=parent)
         self.w = w
         self.database = database
@@ -18,10 +22,10 @@ class UpdateClientDialog(gtk.Dialog):
         self.vbox.pack_start(vbox)
 
         hbox = gtk.HBox(spacing = 3)
-        yes_button = hildon.Button(gtk.HILDON_SIZE_AUTO,
+        yes_button = hildon.Button(gtk.HILDON_SIZE_FINGER_HEIGHT,
                                    hildon.BUTTON_ARRANGEMENT_VERTICAL,
                                    "Yes")
-        no_button = hildon.Button(gtk.HILDON_SIZE_AUTO,
+        no_button = hildon.Button(gtk.HILDON_SIZE_FINGER_HEIGHT,
                                   hildon.BUTTON_ARRANGEMENT_VERTICAL,
                                   "No")
         hbox.pack_start(yes_button)
