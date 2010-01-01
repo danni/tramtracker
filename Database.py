@@ -5,18 +5,22 @@ import os.path
 
 from math import *
 
-def deg2rad(deg):
-    return pi * deg / 180
+from location import distance_between
 
-def haversine((lat1, lon1), (lat2, lon2)):
-    R = 6371
-    dLat = deg2rad(lat2 - lat1)
-    dLon = deg2rad(lon2 - lon1)
-    a = sin(dLat / 2) ** 2 + \
-        cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * sin(dLon / 2) ** 2
-    c = 2 * atan2(sqrt(a), sqrt(1 - a))
-    d = R * c
-    return d
+# Use Maemo function instead
+#
+# def deg2rad(deg):
+#     return pi * deg / 180
+#
+# def haversine((lat1, lon1), (lat2, lon2)):
+#     R = 6371
+#     dLat = deg2rad(lat2 - lat1)
+#     dLon = deg2rad(lon2 - lon1)
+#     a = sin(dLat / 2) ** 2 + \
+#         cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * sin(dLon / 2) ** 2
+#     c = 2 * atan2(sqrt(a), sqrt(1 - a))
+#     d = R * c
+#     return d
 
 class Database(gobject.GObject):
     __gsignals__ = {
@@ -202,8 +206,8 @@ class Database(gobject.GObject):
         c.close()
 
         for stop in stops:
-            stop['Distance'] = haversine((lat, long),
-                                         (stop['Latitude'], stop['Longitude']))
+            stop['Distance'] = distance_between(lat, long,
+                                stop['Latitude'], stop['Longitude'])
 
         stops.sort(cmp = lambda a, b: cmp(a['Distance'], b['Distance']))
 
