@@ -25,6 +25,7 @@ class StopDisplayDialog(hildon.StackableWindow):
 
     __gsignals__ = {
         'favourite-toggled': (gobject.SIGNAL_RUN_LAST, None, (bool,)),
+        'find-nearby-stops': (gobject.SIGNAL_RUN_LAST, None, (float, float)),
     }
 
     def __init__(self):
@@ -74,6 +75,11 @@ class StopDisplayDialog(hildon.StackableWindow):
         except KeyError:
             pass
 
+        try:
+            self.location = (stopinfo['Latitude'], stopinfo['Longitude'])
+        except KeyError:
+            self.location = None
+
         for key, value in stopinfo.items():
             label = self.ui.get_object (key)
             if label is None: continue
@@ -106,6 +112,9 @@ class StopDisplayDialog(hildon.StackableWindow):
         windows.reverse()
         windows.pop(0)
         for window in windows: window.destroy()
+
+    def _find_nearby_stops(self, button):
+        self.emit('find-nearby-stops', *self.location)
 
     def _favourite_toggled(self, button):
         if self._block_favourite_toggle > 0: return

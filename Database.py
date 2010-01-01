@@ -3,6 +3,21 @@ import gobject
 import sqlite3
 import os.path
 
+from math import *
+
+def deg2rad(deg):
+    return pi * deg / 180
+
+def haversine((lat1, lon1), (lat2, lon2)):
+    R = 6371
+    dLat = deg2rad(lat2 - lat1)
+    dLon = deg2rad(lon2 - lon1)
+    a = sin(dLat / 2) ** 2 + \
+        cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * sin(dLon / 2) ** 2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    d = R * c
+    return d
+
 class Database(gobject.GObject):
     __gsignals__ = {
         'database-created': (gobject.SIGNAL_RUN_LAST, None, ())
@@ -158,7 +173,7 @@ class Database(gobject.GObject):
 
         c = self.conn.cursor()
         try:
-            rows = list(c.execute(query, params))
+            rows = c.execute(query, params)
         except sqlite3.OperationalError, e:
             if e.message.startswith('no such table'):
                 self.setupStopsTable()
@@ -167,8 +182,31 @@ class Database(gobject.GObject):
             else:
                 raise e
 
+        stops = map(lambda row: dict(zip(map(lambda a: a[0], rows.description), row)), rows)
         c.close()
 
-        return rows
+        return stops
+
+    def getNearbyStops(self, lat, long, exclude_stop=0):
+        c = self.conn.cursor()
+
+        RANGE = 0.005
+
+        rows = c.execute('''SELECT StopNo, FlagStopNo, StopName, CityDirection, SuburbName, Latitude, Longitude FROM stops WHERE StopNo != ? AND StopNo IN
+            (SELECT StopNo FROM stops WHERE Latitude BETWEEN ? and ?
+             INTERSECT
+             SELECT StopNo FROM stops WHERE Longitude BETWEEN ? and ?)''',
+             (exclude_stop, lat - RANGE, lat + RANGE, long - RANGE, long + RANGE))
+
+        stops = map(lambda row: dict(zip(map(lambda a: a[0], rows.description), row)), rows)
+        c.close()
+
+        for stop in stops:
+            stop['Distance'] = haversine((lat, long),
+                                         (stop['Latitude'], stop['Longitude']))
+
+        stops.sort(cmp = lambda a, b: cmp(a['Distance'], b['Distance']))
+
+        return stops
 
 gobject.type_register(Database)

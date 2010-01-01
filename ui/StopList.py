@@ -7,13 +7,13 @@ class StopList(hildon.PannableArea):
         'stop-selected': (gobject.SIGNAL_RUN_LAST, None, (str,)),
     }
 
-    def __init__(self):
+    def __init__(self, with_distance=False):
         hildon.PannableArea.__init__(self)
 
         self.hscrollbar_policy = gtk.POLICY_NEVER
         self.vscrollbar_policy = gtk.POLICY_AUTOMATIC
 
-        self.store = gtk.ListStore(str, str, str, str, str)
+        self.store = gtk.ListStore(str, str, str, str, str, str)
 
         self.selector = gtk.TreeView(model=self.store)
         self.add(self.selector)
@@ -28,17 +28,20 @@ class StopList(hildon.PannableArea):
         col.set_expand(True)
         self.selector.insert_column_with_attributes(-1, "Direction",
             gtk.CellRendererText(), text=3)
-        self.selector.insert_column_with_attributes(-1, "Suburb",
-            gtk.CellRendererText(), text=4)
+
+        if with_distance:
+            self.selector.insert_column_with_attributes(-1, "Distance",
+                gtk.CellRendererText(), text=5)
+        else:
+            self.selector.insert_column_with_attributes(-1, "Suburb",
+                gtk.CellRendererText(), text=4)
+
 
         def _row_activated(selector, path, column):
             iter = self.store.get_iter(path)
             stopNo = self.store.get_value(iter, 0)
             self.emit('stop-selected', stopNo)
         self.selector.connect('row-activated', _row_activated)
-
-    def append(self, params):
-        self.store.append(params)
 
     def appendStopinfo(self, stopinfo):
         self.store.append((
@@ -47,6 +50,7 @@ class StopList(hildon.PannableArea):
             stopinfo['StopName'],
             stopinfo['CityDirection'],
             stopinfo['SuburbName'],
+            "%i m" % int(stopinfo.get('Distance', 0) * 1000),
         ))
 
 gobject.type_register(StopList)

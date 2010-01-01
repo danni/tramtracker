@@ -81,11 +81,19 @@ class Client(object):
 
             self.gconf.set_list(FAVOURITE_STOPS, gconf.VALUE_INT, fav_stops)
 
+        def _find_nearby_stops(dialog, lat, long):
+            stops = self.database.getNearbyStops(lat, long,
+                        exclude_stop=dialog.stopNo)
+            dialog2 = ListStopsDialog(stops, with_distance=True)
+            dialog2.connect('stop-entered', self.retrieve_stop_info)
+            dialog2.show()
+
         _update_trams()
         timeout_id = gobject.timeout_add_seconds(30, _update_trams)
         dialog.connect('destroy',
             lambda *args: gobject.source_remove(timeout_id))
         dialog.connect('favourite-toggled', _favourite_toggled)
+        dialog.connect('find-nearby-stops', _find_nearby_stops)
 
     def update_database(self, initial_sync=False, force=False):
         kwargs = {}
