@@ -10,6 +10,7 @@ from WebService import WebService
 from Database import Database
 from ui.StopEntryDialog import StopEntryDialog
 from ui.StopDisplayDialog import StopDisplayDialog
+from ui.TramDisplayDialog import TramDisplayDialog
 from ui.UpdateClientDialog import UpdateClientDialog
 from ui.FindByNameDialog import FindByNameDialog
 from ui.ListStopsDialog import ListStopsDialog
@@ -19,6 +20,23 @@ GCONF_DIR = '/apps/tramtracker/'
 GUID_KEY = GCONF_DIR + 'guid'
 LAST_UPDATED = GCONF_DIR + 'last_updated'
 FAVOURITE_STOPS = GCONF_DIR + 'favourite_stops'
+
+def getTramClass(tramNo):
+    # taken from the Dashboard Widget tramtracker.js
+    tramNo = int(tramNo)
+
+    if 1 <= tramNo <= 100: return 'z1'
+    elif tramNo <= 115: return 'z2'
+    elif tramNo <= 230: return 'z3'
+    elif tramNo <= 258: return 'a1'
+    elif tramNo <= 300: return 'a2'
+    elif 681 <= tramNo <= 1040: return 'w'
+    elif 2001 <= tramNo <= 2002: return 'b1'
+    elif 2003 <= tramNo <= 2132: return 'b2'
+    elif 3001 <= tramNo <= 3036: return 'c'
+    elif 3501 <= tramNo <= 3600: return 'd1'
+    elif 5001 <= tramNo <= 5100: return 'c2'
+    else: raise Exception('Unknown tramNo: %i' % tramNo)
 
 class Client(object):
     def __init__(self):
@@ -99,13 +117,54 @@ class Client(object):
         dialog.connect('find-nearby-stops', _find_nearby_stops)
         dialog.connect('tram-entered', self.retrieve_tram_info)
 
-    def retrieve_tram_info(self, dialog, tramNo):
+    def retrieve_tram_info(self, dialog, tramNo, firstStop=None):
+
+        dialog = TramDisplayDialog()
+        dialog.show()
+
+        def set_tram_info(firstStop):
+            d = {
+                'TramClass': getTramClass(tramNo).upper(),
+                'Status': ','.join([ s for v, s in [
+                    (firstStop['HasDisruption'], 'Disrupted'),
+                    (firstStop['AirConditioned'], 'Airconditioned'),
+                    (firstStop['IsLowFloorTram'], 'Low Floor'),
+                    ] if v])
+            }
+            d.update(firstStop)
+            dialog.set_tram_info(d)
+
+        def _find_tram_details(trams):
+            # FIXME: not at all reliable
+            trams = filter(lambda t: tramNo == t['VehicleNo'], trams)
+            dialog.set_progress_indicator(False)
+            print trams
+            set_tram_info(trams[0])
+
+        def _update_tram():
+            dialog.set_progress_indicator(True)
+            self.w.GetNextPredictedArrivalTimeAtStopsForTramNo(tramNo,
+                callback=_got_tram)
+            return True
 
         def _got_tram(details, stops):
-            print details
-            print stops
+            map(lambda s: s.update(self.database.getStop(s['StopNo'])), stops)
+            dialog.set_stop_info(stops)
 
-        self.w.GetNextPredictedArrivalTimeAtStopsForTramNo(tramNo, callback=_got_tram)
+            if firstStop is None:
+                self.w.GetNextPredictedRoutesCollection(stops[0]['StopNo'],
+                    details['RouteNo'],
+                    callback=_find_tram_details)
+            else:
+                dialog.set_progress_indicator(False)
+
+        if firstStop != None: set_tram_info(firstStop)
+
+        _update_tram()
+        timeout_id = gobject.timeout_add_seconds(30, _update_tram)
+        dialog.connect('destroy',
+            lambda *args: gobject.source_remove(timeout_id))
+        dialog.connect('stop-entered', self.retrieve_stop_info)
 
     def update_database(self, initial_sync=False, force=False):
         kwargs = {}

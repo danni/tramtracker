@@ -39,7 +39,6 @@ class WebService(ThreadQueue):
         self.add_request(self._setup_client, **kwargs)
 
     def _setup_client(self):
-        print "Setting up client"
 
         imp = Import('http://www.w3.org/2001/XMLSchema')
         imp.filter.add('http://www.yarratrams.com.au/pidsservice/')
@@ -171,6 +170,7 @@ class WebService(ThreadQueue):
 
     @async_method
     def GetNextPredictedArrivalTimeAtStopsForTramNo(self, tramNo):
+        print "Requesting info for tram", tramNo
         reply = self.client.service.GetNextPredictedArrivalTimeAtStopsForTramNo(tramNo)
 
         try:

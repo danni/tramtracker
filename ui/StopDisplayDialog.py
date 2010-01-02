@@ -26,7 +26,7 @@ class StopDisplayDialog(hildon.StackableWindow):
     __gsignals__ = {
         'favourite-toggled': (gobject.SIGNAL_RUN_LAST, None, (bool,)),
         'find-nearby-stops': (gobject.SIGNAL_RUN_LAST, None, (float, float)),
-        'tram-entered': (gobject.SIGNAL_RUN_LAST, None, (str,)),
+        'tram-entered': (gobject.SIGNAL_RUN_LAST, None, (str, gobject.TYPE_PYOBJECT)),
     }
 
     def __init__(self):
@@ -118,7 +118,7 @@ class StopDisplayDialog(hildon.StackableWindow):
         iter = self.model.get_iter(path)
         tram = self.model.get_value(iter, self.TRAM)
 
-        self.emit('tram-entered', tram['VehicleNo'])
+        self.emit('tram-entered', tram['VehicleNo'], tram)
 
     def _return_to_main(self, button):
         # return to the top screen
