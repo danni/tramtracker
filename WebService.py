@@ -6,10 +6,10 @@ from suds.client import Client
 
 url = 'http://ws.tramtracker.com.au/pidsservice/pids.asmx?wsdl'
 
-parseString = lambda s: s[0]
-parseFloat = lambda f: float(f[0])
-parseBool = lambda b: b[0] == 'true'
-parseDateTime = lambda d: datetime.strptime(d[0].split('.', 1)[0].split('+', 1)[0], '%Y-%m-%dT%H:%M:%S')
+parseString = lambda s: s[0] if isinstance(s, list) else s
+parseFloat = lambda f: float(parseString(f))
+parseBool = lambda b: parseString(b) == 'true'
+parseDateTime = lambda d: datetime.strptime(parseString(d).split('.', 1)[0].split('+', 1)[0], '%Y-%m-%dT%H:%M:%S')
 
 def load_request(data, props):
     d = {}
@@ -18,7 +18,7 @@ def load_request(data, props):
         if isinstance(prop, tuple):
             prop, transform = prop
         else:
-            transform = lambda a: a[0]
+            transform = parseString
 
         try:
             d[prop] = transform(getattr(data, prop))
@@ -168,3 +168,37 @@ class WebService(ThreadQueue):
             isUpDirection)
 
         print reply
+
+    @async_method
+    def GetNextPredictedArrivalTimeAtStopsForTramNo(self, tramNo):
+        reply = self.client.service.GetNextPredictedArrivalTimeAtStopsForTramNo(tramNo)
+
+        try:
+            info = reply.GetNextPredictedArrivalTimeAtStopsForTramNoResult.diffgram.NewDataSet
+            detailsreply = info.TramNoRunDetailsTable
+            stopsreply = info.NextPredictedStopsDetailsTable
+
+            details = load_request(detailsreply, [
+                    'VehicleNo',
+                   ('AtLayover', parseBool),
+                   ('Available', parseBool),
+                    'RouteNo',
+                    'HeadBoardRouteNo',
+                   ('Up', parseBool),
+                   ('HasSpecialEvent', parseBool),
+                   ('HasDisruption', parseBool),
+                ])
+
+            stops = map(lambda s: load_request(s, [
+                    'StopNo',
+                   ('PredictedArrivalDateTime', parseDateTime),
+                ]), stopsreply)
+
+            return (details, stops)
+
+        except AttributeError, e:
+            if reply.validationResult != "":
+                print reply.validationResult
+                return ()
+            else:
+                raise e

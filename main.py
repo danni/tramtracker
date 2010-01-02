@@ -97,6 +97,15 @@ class Client(object):
             lambda *args: gobject.source_remove(timeout_id))
         dialog.connect('favourite-toggled', _favourite_toggled)
         dialog.connect('find-nearby-stops', _find_nearby_stops)
+        dialog.connect('tram-entered', self.retrieve_tram_info)
+
+    def retrieve_tram_info(self, dialog, tramNo):
+
+        def _got_tram(details, stops):
+            print details
+            print stops
+
+        self.w.GetNextPredictedArrivalTimeAtStopsForTramNo(tramNo, callback=_got_tram)
 
     def update_database(self, initial_sync=False, force=False):
         kwargs = {}

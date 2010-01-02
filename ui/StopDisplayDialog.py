@@ -26,6 +26,7 @@ class StopDisplayDialog(hildon.StackableWindow):
     __gsignals__ = {
         'favourite-toggled': (gobject.SIGNAL_RUN_LAST, None, (bool,)),
         'find-nearby-stops': (gobject.SIGNAL_RUN_LAST, None, (float, float)),
+        'tram-entered': (gobject.SIGNAL_RUN_LAST, None, (str,)),
     }
 
     def __init__(self):
@@ -52,7 +53,9 @@ class StopDisplayDialog(hildon.StackableWindow):
         label.set_attributes(attributes)
 
         self.model = gtk.ListStore(str, str, str, gobject.TYPE_PYOBJECT)
-        self.ui.get_object('tramlisting').set_model(self.model)
+        tramlisting = self.ui.get_object('tramlisting')
+        tramlisting.set_model(self.model)
+        tramlisting.connect('row-activated', self._tram_selected)
 
         self.ui.connect_signals(self)
 
@@ -110,6 +113,12 @@ class StopDisplayDialog(hildon.StackableWindow):
             label.show()
         else:
             label.hide()
+
+    def _tram_selected(self, treeview, path, column):
+        iter = self.model.get_iter(path)
+        tram = self.model.get_value(iter, self.TRAM)
+
+        self.emit('tram-entered', tram['VehicleNo'])
 
     def _return_to_main(self, button):
         # return to the top screen
