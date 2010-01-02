@@ -100,7 +100,10 @@
               <object class="GtkTreeViewColumn" id="treeviewcolumn1">
                 <property name="title">Route</property>
                 <child>
-                  <object class="GtkCellRendererText" id="cellrenderertext1"/>
+                  <object class="GtkCellRendererText" id="cellrenderertext1">
+                    <property name="weight">700</property>
+		    <property name="scale">1.15</property>
+                  </object>
                   <attributes>
                     <attribute name="text">0</attribute>
                   </attributes>

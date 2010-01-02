@@ -1,4 +1,4 @@
-import gtk
+import gtk, pango
 import gobject
 import hildon
 
@@ -21,8 +21,11 @@ class StopList(hildon.PannableArea):
 
         self.selector.insert_column_with_attributes(-1, "Stop ID",
             gtk.CellRendererText(), text=0)
+        renderer = gtk.CellRendererText()
         self.selector.insert_column_with_attributes(-1, "No",
-            gtk.CellRendererText(), text=1)
+            renderer, text=1)
+        renderer.set_property('weight', pango.WEIGHT_BOLD)
+	renderer.set_property('scale', 1.15)
         col = self.selector.insert_column_with_attributes(-1, "Stop Name",
             gtk.CellRendererText(), text=2)
         col.set_expand(True)
