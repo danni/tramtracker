@@ -2,6 +2,9 @@ import gtk
 import gobject
 import hildon
 
+HILDON_HEIGHT_FINGER = 70
+HILDON_HEIGHT_THUMB = 105
+
 class StopEntryDialog(hildon.StackableWindow):
 
     __gsignals__ = {
@@ -35,6 +38,16 @@ class StopEntryDialog(hildon.StackableWindow):
         menu.show_all()
 
         self.set_app_menu(menu)
+
+        # fix theming
+        for widget in self.ui.get_objects():
+            if not isinstance(widget, gtk.Button): continue
+            # hildon_gtk_widget_set_theme_size is not bound into Python
+            if widget.get_name().startswith('largebutton'):
+                widget.set_size_request(-1, HILDON_HEIGHT_THUMB)
+            elif widget.get_name().startswith('kpbutton'):
+                widget.set_size_request(HILDON_HEIGHT_THUMB, HILDON_HEIGHT_THUMB)
+            widget.set_name('HildonButton-thumb')
 
     def _entry_activate(self, entry):
         stopNo = entry.get_text()

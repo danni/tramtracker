@@ -56,6 +56,12 @@ class StopDisplayDialog(hildon.StackableWindow):
 
         self.ui.connect_signals(self)
 
+        # fix theming
+        for widget in self.ui.get_objects():
+            if not isinstance(widget, gtk.Button): continue
+            # hildon_gtk_widget_set_theme_size is not bound into Python
+            widget.set_name('HildonButton-finger')
+
     def set_progress_indicator(self, state):
         hildon.hildon_gtk_window_set_progress_indicator(self, state)
 
@@ -81,7 +87,7 @@ class StopDisplayDialog(hildon.StackableWindow):
             self.location = None
 
         for key, value in stopinfo.items():
-            label = self.ui.get_object (key)
+            label = self.ui.get_object(key)
             if label is None: continue
             label.set_text(str(value))
 
