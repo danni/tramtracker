@@ -5,9 +5,10 @@ Maintainer: Danielle Madeley <danielle.madeley@collabora.co.uk>
 Build-Depends: debhelper (>= 5)
 Build-Depends-Indep: python-all-dev (>= 2.3.5-9), python-central (>= 0.5)
 Standards-Version: 3.8.1
+XS-Python-Version: all
 
 Package: tramtracker
-Architecture: any
-Depends: ${python:Depends}
+Architecture: all
+Depends: ${python:Depends}, python-location, python-conic, python-gtk2, python-hildon, python-suds
 XB-Python-Version: ${python:Versions}
 Description: Maemo Fremantle application for Melbourne trams
