@@ -29,6 +29,9 @@ install:
 	install -D -m 755 tramtracker debian/tramtracker/usr/bin/tramtracker
 	install -D -m 644 TramTracker.desktop debian/tramtracker/usr/share/applications/hildon/TramTracker.desktop
 	install -D -m 644 au.id.madeley.danni.TramTracker.service debian/tramtracker/usr/share/dbus-1/services/au.id.madeley.danni.TramTracker.service
+	install -D -m 644 tramtracker26.png debian/tramtracker/usr/share/icons/hicolor/26x26/apps/tramtracker.png
+	install -D -m 644 tramtracker40.png debian/tramtracker/usr/share/icons/hicolor/40x40/apps/tramtracker.png
+	install -D -m 644 tramtracker64.png debian/tramtracker/usr/share/icons/hicolor/scalable/apps/tramtracker.png
 
 .PHONY: binary-common
 binary-common:
