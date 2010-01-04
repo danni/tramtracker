@@ -1,0 +1,63 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+PACKAGE=tramtracker
+DEB_UPSTREAM_VERSION=$(shell dpkg-parsechangelog \
+		             | grep ^Version: | cut -d ' ' -f 2 | cut -d '-' -f 1)
+
+build:
+
+.PHONY: clean
+clean:
+	dh_testdir
+	dh_testroot
+	rm -rf debian/tramtracker/*
+	dh_clean
+
+.PHONY: install
+install:
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+	# install files
+	mkdir -p debian/tramtracker/usr/share/tramtracker/ui
+	find -name '*.py' -exec cp {} debian/tramtracker/usr/share/tramtracker/{} \;
+	find -name '*.ui' -exec cp {} debian/tramtracker/usr/share/tramtracker/{} \;
+	install -D -m 755 tramtracker debian/tramtracker/usr/bin/tramtracker
+	install -D -m 644 TramTracker.desktop debian/tramtracker/usr/share/applications/hildon/TramTracker.desktop
+	install -D -m 644 au.id.madeley.danni.TramTracker.service debian/tramtracker/usr/share/dbus-1/services/au.id.madeley.danni.TramTracker.service
+	install -D -m 644 tramtracker26.png debian/tramtracker/usr/share/icons/hicolor/26x26/apps/tramtracker.png
+	install -D -m 644 tramtracker40.png debian/tramtracker/usr/share/icons/hicolor/40x40/apps/tramtracker.png
+	install -D -m 644 tramtracker64.png debian/tramtracker/usr/share/icons/hicolor/scalable/apps/tramtracker.png
+
+.PHONY: binary-common
+binary-common:
+	dh_testdir
+	dh_testroot
+	dh_installdocs
+	dh_installexamples
+	dh_installman
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_pycentral
+	dh_makeshlibs
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+.PHONY: binary-indep
+binary-indep: install
+	$(MAKE) -f debian/rules DH_OPTIONS=-i binary-common
+
+.PHONY: binary-arch
+binary-arch:
+
+.PHONY: binary
+binary: binary-indep binary-arch
