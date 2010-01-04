@@ -76,4 +76,7 @@ class StopEntryDialog(hildon.StackableWindow):
     def _show_favourites(self, button):
         self.emit('show-favourites')
 
+    def set_progress_indicator(self, state):
+        hildon.hildon_gtk_window_set_progress_indicator(self, state)
+
 gobject.type_register(StopEntryDialog)

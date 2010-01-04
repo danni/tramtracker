@@ -3,6 +3,7 @@ import gobject
 import gconf
 
 import location
+import conic
 
 from datetime import datetime, date
 
@@ -42,25 +43,43 @@ class Client(object):
     def __init__(self):
         self.gconf = gconf.client_get_default()
         self.database = Database()
+        self.database.connect('database-created',
+            lambda *args: self.update_database(initial_sync=True))
 
         guid = self.gconf.get_string(GUID_KEY)
 
-        self.w = WebService(guid=guid, callback=self.client_ready)
-
         self.dialog = StopEntryDialog()
-        self.dialog.show()
-        self.dialog.connect('stop-entered', self.retrieve_stop_info)
-        self.dialog.connect('search-by-name', lambda *args: self.search_by_name())
-        self.dialog.connect('find-nearby-stops', lambda *args: self.find_nearby_stops())
-        self.dialog.connect('update-database', lambda *args: self.update_database(force=True))
-        self.dialog.connect('show-favourites', lambda *args: self.show_favourites())
         self.dialog.connect('destroy', lambda *args: gtk.main_quit())
-        self.database.connect('database-created', lambda *args: self.update_database(initial_sync=True))
+
+        self.dialog.set_progress_indicator(True)
+        self.dialog.show()
+
+        def _connection_event(connection, event):
+            print "connection"
+            self.w = WebService(guid=guid, callback=self.client_ready)
+
+            self.dialog.connect('stop-entered', self.retrieve_stop_info)
+            self.dialog.connect('search-by-name',
+                lambda *args: self.search_by_name())
+            self.dialog.connect('find-nearby-stops',
+                lambda *args: self.find_nearby_stops())
+            self.dialog.connect('update-database',
+                lambda *args: self.update_database(force=True))
+            self.dialog.connect('show-favourites',
+                lambda *args: self.show_favourites())
 
         self.update_database()
 
+        # FIXME: no signal from Conic
+        # connection = conic.Connection()
+        # connection.connect("connection-event", _connection_event)
+        # connection.request_connection(conic.CONNECT_FLAG_NONE)
+        _connection_event(None, None)
+
     def client_ready(self, guid):
         self.gconf.set_string(GUID_KEY, guid)
+
+        self.dialog.set_progress_indicator(False)
 
     def retrieve_stop_info(self, dialog, stopNo):
         try:
