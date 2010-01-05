@@ -11,4 +11,4 @@ Package: tramtracker
 Architecture: all
 Depends: ${python:Depends}, python-location, python-conic, python-gtk2, python-hildon, python-suds
 XB-Python-Version: ${python:Versions}
-Description: Maemo Fremantle application for Melbourne trams
+Description: Real-time tracking of trams in Melbourne, Australia

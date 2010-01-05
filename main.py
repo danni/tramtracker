@@ -1,3 +1,23 @@
+# tramtracker -- Real-time tracking of trams in Melbourne, Australia
+#
+# main.py - entry point for the client
+#
+# Copyright (C) 2009-2010, Danielle Madeley <danielle@madeley.id.au>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
 import gtk
 import gobject
 import gconf
@@ -56,6 +76,8 @@ class Client(object):
 
         def _connection_event(connection, event):
             print "connection"
+
+	def blah():
             self.w = WebService(guid=guid, callback=self.client_ready)
 
             self.dialog.connect('stop-entered', self.retrieve_stop_info)
@@ -71,10 +93,10 @@ class Client(object):
         self.update_database()
 
         # FIXME: no signal from Conic
-        # connection = conic.Connection()
-        # connection.connect("connection-event", _connection_event)
-        # connection.request_connection(conic.CONNECT_FLAG_NONE)
-        _connection_event(None, None)
+        connection = conic.Connection()
+        connection.connect("connection-event", _connection_event)
+        connection.request_connection(conic.CONNECT_FLAG_NONE)
+	blah()
 
     def client_ready(self, guid):
         self.gconf.set_string(GUID_KEY, guid)
@@ -299,9 +321,10 @@ class Client(object):
         # FIXME: does changed ever get called?
         location_updated(device)
 
-gobject.threads_init()
-gtk.set_application_name("Tram Tracker")
+if __name__ == '__main__':
+    gobject.threads_init()
+    gtk.set_application_name("Tram Tracker")
 
-Client()
+    Client()
 
-gtk.main()
+    gtk.main()
