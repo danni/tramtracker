@@ -14,6 +14,7 @@ clean:
 	dh_testdir
 	dh_testroot
 	rm -rf debian/tramtracker/*
+	find -name '*.pyo' -exec rm {} \;
 	dh_clean
 
 .PHONY: install
