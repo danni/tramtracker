@@ -75,9 +75,6 @@ class Client(object):
         self.dialog.show()
 
         def _connection_event(connection, event):
-            print "connection"
-
-	def blah():
             self.w = WebService(guid=guid, callback=self.client_ready)
 
             self.dialog.connect('stop-entered', self.retrieve_stop_info)
@@ -90,13 +87,13 @@ class Client(object):
             self.dialog.connect('show-favourites',
                 lambda *args: self.show_favourites())
 
-        self.update_database()
+            self.update_database()
 
         # FIXME: no signal from Conic
-        connection = conic.Connection()
-        connection.connect("connection-event", _connection_event)
-        connection.request_connection(conic.CONNECT_FLAG_NONE)
-	blah()
+        # connection = conic.Connection()
+        # connection.connect("connection-event", _connection_event)
+        # connection.request_connection(conic.CONNECT_FLAG_NONE)
+        _connection_event(None, None)
 
     def client_ready(self, guid):
         self.gconf.set_string(GUID_KEY, guid)
@@ -325,6 +322,17 @@ if __name__ == '__main__':
     gobject.threads_init()
     gtk.set_application_name("Tram Tracker")
 
-    Client()
+    try:
+        Client()
+    except KeyboardException:
+        gtk.main_quit()
+    except Exception, e:
+        from traceback import format_exc
+
+        dialog = gtk.Dialog(title="Exception")
+        dialog.vbox.pack_start(gtk.Label(format_exc()))
+        dialog.show_all()
+        dialog.run()
+        gtk.main_quit()
 
     gtk.main()
