@@ -7,5 +7,5 @@ Exec=/usr/bin/tramtracker
 Icon=tramtracker
 X-Window-Icon=tramtracker
 X-Window-Icon-Dimmed=tramtracker
-X-Osso-Service=au.id.madeley.danni.TramTracker
+X-Osso-Service=au.id.madeley.danni.tramtracker
 X-Osso-Type=application/x-executable

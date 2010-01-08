@@ -1,3 +1,9 @@
+tramtracker (0.1.1-1) fremantle; urgency=low
+
+  * Fix OSSO registration
+
+ -- Danielle Madeley <danielle.madeley@collabora.co.uk>  Fri, 08 Jan 2010 22:51:55 +1100
+
 tramtracker (0.1-1) fremantle; urgency=low
 
   * Initial release

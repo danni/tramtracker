@@ -22,6 +22,7 @@ import gtk
 import gobject
 import gconf
 
+import osso
 import location
 import conic
 
@@ -320,6 +321,9 @@ class Client(object):
 
 if __name__ == '__main__':
     gobject.threads_init()
+
+    osso_context = osso.Context('au.id.madeley.danni.tramtracker',
+                                '0.1.1', False)
     gtk.set_application_name("Tram Tracker")
 
     try:

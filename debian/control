@@ -9,6 +9,6 @@ XS-Python-Version: all
 
 Package: tramtracker
 Architecture: all
-Depends: ${python:Depends}, python-location, python-conic, python-gtk2, python-hildon, python-suds
+Depends: ${python:Depends}, python-location, python-conic, python-gtk2, python-hildon, python-suds, python-osso
 XB-Python-Version: ${python:Versions}
 Description: Real-time tracking of trams in Melbourne, Australia
