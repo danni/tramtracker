@@ -37,6 +37,8 @@
                     <property name="can_focus">True</property>
                     <property name="max_length">4</property>
                     <property name="text_length">4</property>
+                    <property name="hildon-input-mode">2</property>
+                    <property name="hildon-input-default">2</property>
                     <signal name="activate" handler="_entry_activate"/>
                   </object>
                   <packing>

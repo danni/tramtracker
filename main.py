@@ -323,7 +323,7 @@ if __name__ == '__main__':
     gobject.threads_init()
 
     osso_context = osso.Context('au.id.madeley.danni.tramtracker',
-                                '0.1.1', False)
+                                '0.1.2', False)
     gtk.set_application_name("Tram Tracker")
 
     try:
